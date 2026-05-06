@@ -60,11 +60,11 @@
             <form id="login-form" onsubmit="handleLogin(event)">
                 <div class="mb-5">
                     <label class="block text-xs font-bold text-neutral-900 uppercase tracking-wider mb-2">Email / Username</label>
-                    <input type="text" id="login-username" value="budi@bps.go.id" class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-lg focus:outline-none focus:border-brand-600 focus:ring-1 focus:ring-brand-600 text-neutral-900 transition-colors" required>
+                    <input type="text" id="login-username" value="" class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-lg focus:outline-none focus:border-brand-600 focus:ring-1 focus:ring-brand-600 text-neutral-900 transition-colors" required>
                 </div>
                 <div class="mb-8">
                     <label class="block text-xs font-bold text-neutral-900 uppercase tracking-wider mb-2">Password</label>
-                    <input type="password" id="login-password" value="admin" class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-lg focus:outline-none focus:border-brand-600 focus:ring-1 focus:ring-brand-600 text-neutral-900 transition-colors" required>
+                    <input type="password" id="login-password" value="" class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-lg focus:outline-none focus:border-brand-600 focus:ring-1 focus:ring-brand-600 text-neutral-900 transition-colors" required>
                     <p id="login-error" class="text-red-500 text-xs font-bold mt-2 hidden">Email atau password salah!</p>
                 </div>
                 <button type="submit" id="login-submit-btn" class="w-full bg-brand-600 hover:bg-brand-500 text-white font-bold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
@@ -132,7 +132,7 @@
                             <h2 class="text-3xl font-black text-neutral-900 tracking-tight">Pengumuman</h2>
                             <p class="text-neutral-500 mt-2 text-sm max-w-2xl">Papan informasi dan pembaruan terbaru dari pusat.</p>
                         </div>
-                        <button onclick="openModal('modal-informasi')" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold uppercase tracking-wider px-5 py-3 rounded-lg transition-colors whitespace-nowrap">+ Tambah Data</button>
+                        <button id="btn-tambah-informasi" style="display:none;" onclick="openModal('modal-informasi')" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold uppercase tracking-wider px-5 py-3 rounded-lg transition-colors whitespace-nowrap">+ Tambah Data</button>
                     </div>
                     <div class="space-y-4" id="list-informasi"></div>
                 </section>
@@ -144,7 +144,7 @@
                             <h2 class="text-3xl font-black text-neutral-900 tracking-tight">Administrasi</h2>
                             <p class="text-neutral-500 mt-2 text-sm max-w-2xl">Lacak progres kegiatan administratif pendukung sensus.</p>
                         </div>
-                        <button onclick="openModal('modal-administrasi')" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold uppercase tracking-wider px-5 py-3 rounded-lg transition-colors whitespace-nowrap">+ Tambah Data</button>
+                        <button id="btn-tambah-administrasi" style="display:none;" onclick="openModal('modal-administrasi')" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold uppercase tracking-wider px-5 py-3 rounded-lg transition-colors whitespace-nowrap">+ Tambah Data</button>
                     </div>
                     
                     <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
@@ -197,7 +197,7 @@
                             <h2 class="text-3xl font-black text-neutral-900 tracking-tight">Inventaris & Tautan</h2>
                             <p class="text-neutral-500 mt-2 text-sm max-w-2xl">Repositori terpusat untuk buku pedoman, slide, dan aset.</p>
                         </div>
-                        <button onclick="openModal('modal-inventarisir')" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold uppercase tracking-wider px-5 py-3 rounded-lg transition-colors whitespace-nowrap">+ Tambah Data</button>
+                        <button id="btn-tambah-inventarisir" style="display:none;" onclick="openModal('modal-inventarisir')" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold uppercase tracking-wider px-5 py-3 rounded-lg transition-colors whitespace-nowrap">+ Tambah Data</button>
                     </div>
                     <div class="flex flex-wrap gap-2 mb-8" id="filter-inventarisir"></div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="grid-inventarisir"></div>
@@ -210,7 +210,7 @@
                             <h2 class="text-3xl font-black text-neutral-900 tracking-tight">Manajemen Akun</h2>
                             <p class="text-neutral-500 mt-2 text-sm max-w-2xl">Kelola profil dan hak akses pengguna sistem.</p>
                         </div>
-                        <button onclick="openModal('modal-akun')" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold uppercase tracking-wider px-5 py-3 rounded-lg transition-colors whitespace-nowrap">+ Tambah Akun</button>
+                        <button id="btn-tambah-akun" style="display:none;" onclick="openModal('modal-akun')" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold uppercase tracking-wider px-5 py-3 rounded-lg transition-colors whitespace-nowrap">+ Tambah Akun</button>
                     </div>
 
                     <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
@@ -257,7 +257,7 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Role</label>
-                        <select id="akun-role" class="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-brand-600 text-neutral-900 text-sm">
+                        <select id="akun-role" class="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-brand-600 text-neutral-900 text-sm transition-colors">
                             <option value="Super Admin">Super Admin</option>
                             <option value="Admin">Admin</option>
                             <option value="Viewer">Viewer</option>
@@ -265,7 +265,7 @@
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Status</label>
-                        <select id="akun-status" class="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-brand-600 text-neutral-900 text-sm">
+                        <select id="akun-status" class="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-brand-600 text-neutral-900 text-sm transition-colors">
                             <option value="Aktif">Aktif</option>
                             <option value="Nonaktif">Nonaktif</option>
                         </select>
@@ -273,7 +273,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Bidang</label>
-                    <select id="akun-bidang" class="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-brand-600 text-neutral-900 text-sm" required>
+                    <select id="akun-bidang" class="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-brand-600 text-neutral-900 text-sm transition-colors" required>
                         <option value="Kepala BPS">Kepala BPS</option>
                         <option value="Ketua Tim SE2026">Ketua Tim SE2026</option>
                         <option value="DTSEN">DTSEN</option>
@@ -385,12 +385,22 @@
             <form id="form-inventarisir" class="p-6 space-y-4" onsubmit="saveData(event, 'inventarisir')">
                 <input type="hidden" id="inventarisir-id">
                 <div>
-                    <label class="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Judul Tautan/Bahan</label>
-                    <input type="text" id="inventarisir-judul" class="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-brand-600 text-neutral-900 text-sm font-medium" required>
+                    <label class="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Nama</label>
+                    <input type="text" id="inventarisir-nama" class="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-brand-600 text-neutral-900 text-sm font-medium" required>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Kategori</label>
-                    <input type="text" id="inventarisir-kategori" placeholder="Mis: Materi, Media, Sosialisasi" class="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-brand-600 text-neutral-900 text-sm" required>
+                    <select id="inventarisir-kategori" class="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-brand-600 text-neutral-900 text-sm transition-colors" required>
+                        <option value="Media">Media</option>
+                        <option value="Bahan Paparan/Sosialisasi">Bahan Paparan/Sosialisasi</option>
+                        <option value="Materi">Materi</option>
+                        <option value="Pengumuman">Pengumuman</option>
+                        <option value="Lainnya">Lainnya</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Link Tautan</label>
+                    <input type="url" id="inventarisir-link" placeholder="https://..." class="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-brand-600 text-neutral-900 text-sm font-medium" required>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Deskripsi Singkat</label>
@@ -416,7 +426,9 @@
         // --- 1. DATA STORAGE (Default Data jika API gagal) ---
         let db = {
             akun: [
-                { id: "AKN-001", nama: "Budi Santoso", email: "budi@bps.go.id", role: "Super Admin", bidang: "Kepala BPS", status: "Aktif", password: "admin" }
+                { id: "AKN-001", nama: "Budi Santoso", email: "budi@bps.go.id", role: "Super Admin", bidang: "Kepala BPS", status: "Aktif", password: "admin" },
+                { id: "AKN-002", nama: "Siti Aminah", email: "siti@bps.go.id", role: "Admin", bidang: "Manajemen Lapangan", status: "Aktif", password: "123" },
+                { id: "AKN-003", nama: "Jono Riyadi", email: "jono@bps.go.id", role: "Viewer", bidang: "Pengolahan & TIK", status: "Aktif", password: "123" }
             ],
             informasi: [],
             administrasi: [],
@@ -478,7 +490,7 @@
                 // Mapping Data Sheet "Inventarisir"
                 if(dataFromSheet['Inventarisir'] && dataFromSheet['Inventarisir'].length > 0) {
                     db.inventarisir = dataFromSheet['Inventarisir'].map(row => ({
-                        id: row[0], kategori: row[1], judul: row[2], deskripsi: row[3] || ''
+                        id: row[0], kategori: row[1], nama: row[2], link_tautan: row[3], deskripsi: row[4] || ''
                     }));
                 }
                 
@@ -494,7 +506,6 @@
 
             initNavigation();
             switchView('dashboard');
-            refreshAllViews();
         });
 
 
@@ -544,6 +555,24 @@
         document.getElementById('open-sidebar').onclick = () => document.getElementById('sidebar').classList.remove('-translate-x-full');
         document.getElementById('close-sidebar').onclick = () => document.getElementById('sidebar').classList.add('-translate-x-full');
 
+        // --- MANAJEMEN HAK AKSES PERAN (RBAC) ---
+        function applyRolePermissions() {
+            if(!currentUser) return;
+            const r = currentUser.role;
+            const canAddAll = r === 'Super Admin' || r === 'Admin';
+
+            // Mengatur visibilitas tombol "Tambah Data" Global
+            const btnInfo = document.getElementById('btn-tambah-informasi');
+            const btnAdmin = document.getElementById('btn-tambah-administrasi');
+            const btnInv = document.getElementById('btn-tambah-inventarisir');
+            const btnAkun = document.getElementById('btn-tambah-akun');
+
+            if(btnInfo) btnInfo.style.display = canAddAll ? 'inline-block' : 'none';
+            if(btnAdmin) btnAdmin.style.display = canAddAll ? 'inline-block' : 'none';
+            if(btnInv) btnInv.style.display = canAddAll ? 'inline-block' : 'none';
+            if(btnAkun) btnAkun.style.display = canAddAll ? 'inline-block' : 'none';
+        }
+
         // --- 4. RENDER FUNCTIONS ---
         function getBadgeStyle(text) {
             const t = String(text).toLowerCase();
@@ -573,29 +602,49 @@
             const container = document.getElementById('list-informasi');
             if(db.informasi.length === 0) return container.innerHTML = `<p class="p-8 text-center text-neutral-500 text-sm border border-neutral-200 rounded-xl bg-white">Belum ada data pengumuman.</p>`;
             
-            container.innerHTML = db.informasi.map(info => `
+            container.innerHTML = db.informasi.map(info => {
+                let actions = '';
+                // Hanya Super Admin & Admin yang bisa edit/hapus Informasi
+                if (currentUser && (currentUser.role === 'Super Admin' || currentUser.role === 'Admin')) {
+                    actions = `
+                        <div>
+                            <button onclick="editData('${info.id}', 'informasi')" class="text-[10px] font-bold text-brand-600 hover:text-brand-900 uppercase tracking-wider mr-3">Edit</button>
+                            <button onclick="deleteData('${info.id}', 'informasi')" class="text-[10px] font-bold text-neutral-400 hover:text-neutral-900 uppercase tracking-wider">Hapus</button>
+                        </div>
+                    `;
+                }
+
+                return `
                 <div class="bg-white p-6 rounded-xl border border-neutral-200 hover:border-brand-500 transition-colors">
                     <div class="flex justify-between items-start mb-3">
                         <h3 class="text-lg font-bold text-neutral-900">${info.headline}</h3>
                         <div class="flex flex-col items-end shrink-0 ml-4 gap-2">
                             <span class="text-[10px] font-bold uppercase tracking-wider text-neutral-400">${info.tgl}</span>
-                            <div>
-                                <button onclick="editData('${info.id}', 'informasi')" class="text-[10px] font-bold text-brand-600 hover:text-brand-900 uppercase tracking-wider mr-3">Edit</button>
-                                <button onclick="deleteData('${info.id}', 'informasi')" class="text-[10px] font-bold text-neutral-400 hover:text-neutral-900 uppercase tracking-wider">Hapus</button>
-                            </div>
+                            ${actions}
                         </div>
                     </div>
                     <p class="text-neutral-600 text-sm mb-4 leading-relaxed">${info.detail}</p>
                     <p class="text-xs font-bold text-neutral-900">Oleh: <span class="font-medium text-neutral-500">${info.penulis}</span></p>
                 </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         function renderAdministrasi() {
             const container = document.getElementById('table-administrasi');
             if(db.administrasi.length === 0) return container.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-neutral-500 text-sm">Belum ada data.</td></tr>`;
 
-            container.innerHTML = db.administrasi.map(adm => `
+            container.innerHTML = db.administrasi.map(adm => {
+                let actions = '';
+                // Hanya Super Admin & Admin yang bisa edit/hapus Administrasi
+                if (currentUser && (currentUser.role === 'Super Admin' || currentUser.role === 'Admin')) {
+                    actions = `
+                        <button onclick="editData('${adm.id}', 'administrasi')" class="text-xs font-bold text-brand-600 hover:text-brand-900 uppercase tracking-wider mr-3">Edit</button>
+                        <button onclick="deleteData('${adm.id}', 'administrasi')" class="text-xs font-bold text-neutral-400 hover:text-neutral-900 uppercase tracking-wider">Hapus</button>
+                    `;
+                }
+
+                return `
                 <tr class="hover:bg-neutral-50 border-b border-neutral-100 last:border-0 transition-colors">
                     <td class="px-6 py-4 whitespace-nowrap"><span class="text-xs font-bold text-neutral-500 uppercase tracking-wider">${adm.kategori}</span></td>
                     <td class="px-6 py-4">
@@ -605,11 +654,11 @@
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-neutral-600">${adm.tgl}</td>
                     <td class="px-6 py-4 whitespace-nowrap"><span class="px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${getBadgeStyle(adm.status)}">${adm.status}</span></td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <button onclick="editData('${adm.id}', 'administrasi')" class="text-xs font-bold text-brand-600 hover:text-brand-900 uppercase tracking-wider mr-3">Edit</button>
-                        <button onclick="deleteData('${adm.id}', 'administrasi')" class="text-xs font-bold text-neutral-400 hover:text-neutral-900 uppercase tracking-wider">Hapus</button>
+                        ${actions}
                     </td>
                 </tr>
-            `).join('');
+                `;
+            }).join('');
         }
 
         function renderPerencanaan() {
@@ -668,22 +717,32 @@
                 const data = selectedCat === 'Semua' ? db.inventarisir : db.inventarisir.filter(i => i.kategori === selectedCat);
                 if(data.length === 0) return gridContainer.innerHTML = `<p class="col-span-full p-8 text-center text-neutral-500 text-sm border border-neutral-200 rounded-xl bg-white">Belum ada data inventaris.</p>`;
 
-                gridContainer.innerHTML = data.map(inv => `
-                    <div class="bg-white p-6 rounded-xl border border-neutral-200 flex flex-col justify-between hover:border-neutral-900 transition-colors">
-                        <div>
-                            <span class="text-[10px] font-bold uppercase tracking-widest text-brand-600 mb-3 block">${inv.kategori}</span>
-                            <h4 class="font-bold text-neutral-900 text-sm mb-2">${inv.judul}</h4>
-                            <p class="text-xs text-neutral-500 font-medium mb-6">${inv.deskripsi}</p>
-                        </div>
-                        <div class="flex justify-between items-center border-t border-neutral-100 pt-4 mt-auto">
-                            <a href="#" class="text-xs font-bold text-neutral-900 hover:text-brand-600 uppercase tracking-wider">Buka Tautan</a>
+                gridContainer.innerHTML = data.map(inv => {
+                    let actions = '';
+                    // Hanya Super Admin & Admin yang bisa edit/hapus Inventaris
+                    if (currentUser && (currentUser.role === 'Super Admin' || currentUser.role === 'Admin')) {
+                        actions = `
                             <div>
                                 <button onclick="editData('${inv.id}', 'inventarisir')" class="text-[10px] font-bold text-brand-600 hover:text-brand-900 uppercase tracking-wider mr-3">Edit</button>
                                 <button onclick="deleteData('${inv.id}', 'inventarisir')" class="text-[10px] font-bold text-neutral-400 hover:text-neutral-900 uppercase tracking-wider">Hapus</button>
                             </div>
+                        `;
+                    }
+
+                    return `
+                    <div class="bg-white p-6 rounded-xl border border-neutral-200 flex flex-col justify-between hover:border-neutral-900 transition-colors">
+                        <div>
+                            <span class="text-[10px] font-bold uppercase tracking-widest text-brand-600 mb-3 block">${inv.kategori}</span>
+                            <h4 class="font-bold text-neutral-900 text-sm mb-2">${inv.nama}</h4>
+                            <p class="text-xs text-neutral-500 font-medium mb-6">${inv.deskripsi}</p>
+                        </div>
+                        <div class="flex justify-between items-center border-t border-neutral-100 pt-4 mt-auto">
+                            <a href="${inv.link_tautan}" target="_blank" rel="noopener noreferrer" class="text-xs font-bold text-neutral-900 hover:text-brand-600 uppercase tracking-wider">Buka Tautan</a>
+                            ${actions}
                         </div>
                     </div>
-                `).join('');
+                    `;
+                }).join('');
             };
 
             filterContainer.innerHTML = categories.map(cat => `
@@ -708,7 +767,32 @@
             const container = document.getElementById('table-akun');
             if(db.akun.length === 0) return container.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-neutral-500 text-sm">Belum ada akun.</td></tr>`;
 
-            container.innerHTML = db.akun.map(acc => `
+            container.innerHTML = db.akun.map(acc => {
+                let actions = '';
+                if (currentUser) {
+                    const role = currentUser.role;
+                    const isSelf = acc.id === currentUser.id;
+                    
+                    if (role === 'Super Admin') {
+                        // Super Admin: Bisa Edit & Hapus semua
+                        actions = `
+                            <button onclick="editData('${acc.id}', 'akun')" class="text-xs font-bold text-brand-600 hover:text-brand-900 uppercase tracking-wider mr-3">Edit</button>
+                            <button onclick="deleteData('${acc.id}', 'akun')" class="text-xs font-bold text-neutral-400 hover:text-neutral-900 uppercase tracking-wider">Hapus</button>
+                        `;
+                    } else if (role === 'Admin') {
+                        // Admin: Bisa edit, TETAPI tidak bisa hapus akun
+                        actions = `
+                            <button onclick="editData('${acc.id}', 'akun')" class="text-xs font-bold text-brand-600 hover:text-brand-900 uppercase tracking-wider mr-3">Edit</button>
+                        `;
+                    } else if (role === 'Viewer' && isSelf) {
+                        // Viewer: HANYA bisa Edit akun dirinya sendiri
+                        actions = `
+                            <button onclick="editData('${acc.id}', 'akun')" class="text-xs font-bold text-brand-600 hover:text-brand-900 uppercase tracking-wider mr-3">Edit</button>
+                        `;
+                    }
+                }
+
+                return `
                 <tr class="hover:bg-neutral-50 border-b border-neutral-100 last:border-0 transition-colors">
                     <td class="px-6 py-4">
                         <p class="font-bold text-neutral-900 text-sm">${acc.nama}</p>
@@ -724,11 +808,11 @@
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm">
-                        <button onclick="editData('${acc.id}', 'akun')" class="text-xs font-bold text-brand-600 hover:text-brand-900 uppercase tracking-wider mr-3">Edit</button>
-                        <button onclick="deleteData('${acc.id}', 'akun')" class="text-xs font-bold text-neutral-400 hover:text-neutral-900 uppercase tracking-wider">Hapus</button>
+                        ${actions}
                     </td>
                 </tr>
-            `).join('');
+                `;
+            }).join('');
         }
 
         // --- 5. LOGIC: LOGIN ---
@@ -755,6 +839,11 @@
 
                 document.getElementById('login-container').classList.add('hidden');
                 document.getElementById('app-container').classList.remove('hidden');
+                
+                // Menerapkan hak akses role setelah login sukses
+                applyRolePermissions();
+                refreshAllViews();
+                
                 setTimeout(initCharts, 100);
             } else {
                 document.getElementById('login-error').innerText = "Email atau password salah!";
@@ -768,6 +857,15 @@
             document.getElementById('form-' + modalId.split('-')[1]).reset();
             document.getElementById(modalId.split('-')[1] + '-id').value = '';
             document.getElementById('title-' + modalId).innerText = 'Tambah ' + modalId.split('-')[1];
+
+            // Pastikan kolom dropdown aktif saat "Tambah Data" (kecuali jika dikunci oleh logika Edit)
+            if (modalId === 'modal-akun') {
+                ['akun-role', 'akun-status', 'akun-bidang'].forEach(id => {
+                    const el = document.getElementById(id);
+                    el.disabled = false;
+                    el.classList.remove('bg-neutral-100', 'cursor-not-allowed');
+                });
+            }
         }
 
         function closeModal(modalId) {
@@ -787,6 +885,16 @@
                     document.getElementById('akun-bidang').value = dataRow.bidang;
                     document.getElementById('akun-status').value = dataRow.status;
                     document.getElementById('akun-password').value = '';
+
+                    // Jika Viewer sedang Edit profilnya sendiri, kunci dropdown Role/Status/Bidang
+                    const isViewer = currentUser.role === 'Viewer';
+                    ['akun-role', 'akun-status', 'akun-bidang'].forEach(elId => {
+                        const el = document.getElementById(elId);
+                        el.disabled = isViewer;
+                        if(isViewer) el.classList.add('bg-neutral-100', 'cursor-not-allowed');
+                        else el.classList.remove('bg-neutral-100', 'cursor-not-allowed');
+                    });
+                    
                 } else if(type === 'informasi') {
                     document.getElementById('informasi-tgl').value = dataRow.tgl;
                     document.getElementById('informasi-headline').value = dataRow.headline;
@@ -800,7 +908,8 @@
                     document.getElementById('administrasi-keterangan').value = dataRow.keterangan;
                 } else if(type === 'inventarisir') {
                     document.getElementById('inventarisir-kategori').value = dataRow.kategori;
-                    document.getElementById('inventarisir-judul').value = dataRow.judul;
+                    document.getElementById('inventarisir-nama').value = dataRow.nama;
+                    document.getElementById('inventarisir-link').value = dataRow.link_tautan;
                     document.getElementById('inventarisir-deskripsi').value = dataRow.deskripsi;
                 }
                 
@@ -823,13 +932,26 @@
             // Penting: Urutan Array ini harus SAMA PERSIS dengan susunan Kolom di Google Sheets Anda!
             if(type === 'akun') {
                 const pass = document.getElementById('akun-password').value || (id ? db.akun.find(a=>a.id===id).password : 'admin');
+                
+                let roleVal = document.getElementById('akun-role').value;
+                let statusVal = document.getElementById('akun-status').value;
+                let bidangVal = document.getElementById('akun-bidang').value;
+
+                // Perlindungan lapis kedua: Cegah manipulasi HTML inspect element oleh Viewer
+                if (currentUser.role === 'Viewer' && id) {
+                    const oldData = db.akun.find(a=>a.id===id);
+                    roleVal = oldData.role;
+                    statusVal = oldData.status;
+                    bidangVal = oldData.bidang;
+                }
+
                 newData = {
                     id: id || 'AKN-' + Math.floor(Math.random() * 10000),
                     nama: document.getElementById('akun-nama').value,
                     email: document.getElementById('akun-email').value,
-                    role: document.getElementById('akun-role').value,
-                    bidang: document.getElementById('akun-bidang').value,
-                    status: document.getElementById('akun-status').value,
+                    role: roleVal,
+                    bidang: bidangVal,
+                    status: statusVal,
                     password: pass
                 };
             } 
@@ -856,7 +978,8 @@
                 newData = {
                     id: id || 'INV-' + Math.floor(Math.random() * 10000),
                     kategori: document.getElementById('inventarisir-kategori').value,
-                    judul: document.getElementById('inventarisir-judul').value,
+                    nama: document.getElementById('inventarisir-nama').value,
+                    link_tautan: document.getElementById('inventarisir-link').value,
                     deskripsi: document.getElementById('inventarisir-deskripsi').value,
                 };
             }
@@ -900,6 +1023,13 @@
 
         // DELETE DATA
         function deleteData(id, type) {
+            // Perlindungan ekstra: Admin & Viewer tidak bisa sampai ke fungsi ini dari tombol, 
+            // namun ini menahan eksekusi jika dicoba melalui console browser
+            if(type === 'akun' && currentUser.role !== 'Super Admin') {
+                alert("Anda tidak memiliki izin untuk menghapus akun.");
+                return;
+            }
+
             if(window.confirm("Apakah Anda yakin ingin menghapus data ini dari sistem?")) {
                 db[type] = db[type].filter(item => item.id !== id);
                 refreshAllViews();
