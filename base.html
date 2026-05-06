@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BASE2026 - Basis Arsip Sensus Ekonomi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) { .chart-container { height: 350px; } }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #e5e5e5; border-radius: 4px; }
+        
+        .sidebar-scrollbar::-webkit-scrollbar { width: 4px; }
+        .sidebar-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .sidebar-scrollbar::-webkit-scrollbar-thumb { background-color: #404040; border-radius: 4px; }
+        
+        .view-section { display: none; }
+        .view-section.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .modal-active { display: flex !important; animation: fadeIn 0.2s ease-out; }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { 50: '#fffbee', 100: '#fff635', 500: '#febd26', 600: '#f79039', 900: '#231f20' },
+                        neutral: { 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 500: '#6b7280', 800: '#374151', 900: '#231f20' }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-neutral-50 text-neutral-900 font-sans h-screen overflow-hidden antialiased">
+
+    <!-- LOGIN SCREEN -->
+    <div id="login-container" class="absolute inset-0 z-50 bg-neutral-50 flex items-center justify-center">
+        <div class="bg-white p-10 rounded-xl shadow-sm border border-neutral-200 max-w-sm w-full">
+            <div class="text-center mb-10">
+                <h1 class="text-4xl font-black text-neutral-900 tracking-tighter mb-1">BASE2026</h1>
+                <p class="text-xs text-neutral-500 font-medium uppercase tracking-widest">Basis Arsip Sensus Ekonomi</p>
+            </div>
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div class="mb-5">
+                    <label class="block text-xs font-bold text-neutral-900 uppercase tracking-wider mb-2">Email / Username</label>
+                    <input type="text" id="login-username" value="budi@bps.go.id" class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-lg focus:outline-none focus:border-brand-600 focus:ring-1 focus:ring-brand-600 text-neutral-900 transition-colors" required>
+                </div>
+                <div class="mb-8">
+                    <label class="block text-xs font-bold text-neutral-900 uppercase tracking-wider mb-2">Password</label>
+                    <input type="password" id="login-password" value="admin" class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-lg focus:outline-none focus:border-brand-600 focus:ring-1 focus:ring-brand-600 text-neutral-900 transition-colors" required>
+                    <p id="login-error" class="text-red-500 text-xs font-bold mt-2 hidden">Email atau password salah!</p>
+                </div>
+                <button type="submit" class="w-full bg-brand-600 hover:bg-brand-500 text-white font-bold py-3 px-4 rounded-lg transition-colors">
+                    Masuk
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN APP WRAPPER -->
+    <div id="app-container" class="w-full h-full flex hidden">
+
+    <!-- Sidebar Navigation -->
+    <aside class="w-64 bg-neutral-900 flex flex-col h-full z-20 flex-shrink-0 transition-transform duration-300 absolute md:relative -translate-x-full md:translate-x-0" id="sidebar">
+        <div class="p-8 pb-4">
+            <h1 class="text-3xl font-black text-white tracking-tighter">BASE2026</h1>
+            <p class="text-[10px] text-neutral-400 font-bold tracking-widest mt-1">BASIS ARSIP SENSUS</p>
+        </div>
+        <button id="close-sidebar" class="md:hidden absolute top-6 right-6 text-neutral-400 hover:text-white font-bold">X</button>
+        
+        <nav class="flex-1 overflow-y-auto sidebar-scrollbar px-4 py-6 space-y-1" id="nav-menu"></nav>
+
+        <div class="p-6 border-t border-neutral-800 bg-neutral-900">
+            <div>
+                <p id="sidebar-user-name" class="text-sm font-bold text-white">Admin Pusat</p>
+                <p id="sidebar-user-role" class="text-xs text-neutral-400 font-medium mt-1">BPS Nasional</p>
+            </div>
+            <button onclick="location.reload()" class="mt-4 text-xs font-medium text-brand-500 hover:text-brand-100 transition-colors">Logout</button>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 flex flex-col h-full w-full overflow-hidden relative">
+        <header class="md:hidden bg-white border-b border-neutral-200 p-4 flex items-center justify-between z-10">
+            <h1 class="text-xl font-black text-neutral-900 tracking-tighter">BASE2026</h1>
+            <button id="open-sidebar" class="text-neutral-900 text-sm font-bold uppercase tracking-wider">Menu</button>
+        </header>
+
+        <main class="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-10 relative bg-neutral-50">
+            <div class="max-w-6xl mx-auto pb-12">
+                
+                <!-- VIEW: DASHBOARD -->
+                <section id="view-dashboard" class="view-section active">
+                    <div class="mb-10">
+                        <h2 class="text-3xl font-black text-neutral-900 tracking-tight">Ikhtisar</h2>
+                        <p class="text-neutral-500 mt-2 text-sm max-w-2xl">Ringkasan status operasional dan statistik utama Sensus Ekonomi 2026.</p>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10" id="dashboard-stats"></div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                        <div class="bg-white p-8 rounded-xl border border-neutral-200">
+                            <h3 class="text-sm font-bold text-neutral-900 uppercase tracking-wider mb-6">Status Laporan Mingguan</h3>
+                            <div class="chart-container"><canvas id="chartRealisasi"></canvas></div>
+                        </div>
+                        <div class="bg-white p-8 rounded-xl border border-neutral-200">
+                            <h3 class="text-sm font-bold text-neutral-900 uppercase tracking-wider mb-6">Kategori Aset Inventaris</h3>
+                            <div class="chart-container"><canvas id="chartInventaris"></canvas></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW: INFORMASI -->
+                <section id="view-informasi" class="view-section">
+                    <div class="mb-10 flex flex-col md:flex-row md:justify-between md:items-end gap-4">
+                        <div>
+                            <h2 class="text-3xl font-black text-neutral-900 tracking-tight">Pengumuman</h2>
+                            <p class="text-neutral-500 mt-2 text-sm max-w-2xl">Papan informasi dan pembaruan terbaru dari pusat.</p>
+                        </div>
+                        <button onclick="openModal('modal-informasi')" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold uppercase tracking-wider px-5 py-3 rounded-lg transition-colors whitespace-nowrap">+ Tambah Data</button>
+                    </div>
+                    <div class="space-y-4" id="list-informasi"></div>
+                </section>
+
+                <!-- VIEW: ADMINISTRASI -->
+                <section id="view-administrasi" class="view-section">
+                    <div class="mb-10 flex flex-col md:flex-row md:justify-between md:items-end gap-4">
+                        <div>
+                            <h2 class="text-3xl font-black text-neutral-900 tracking-tight">Administrasi</h2>
+                            <p class="text-neutral-500 mt-2 text-sm max-w-2xl">Lacak progres kegiatan administratif pendukung sensus.</p>
+                        </div>
+                        <button onclick="openModal('modal-administrasi')" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold uppercase tracking-wider px-5 py-3 rounded-lg transition-colors whitespace-nowrap">+ Tambah Data</button>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
+                        <div class="overflow-x-auto custom-scrollbar">
+                            <table class="w-full text-left border-collapse">
+                                <thead class="bg-neutral-50 border-b border-neutral-200">
+                                    <tr>
+                                        <th class="px-6 py-4 text-xs font-bold text-neutral-500 uppercase tracking-wider">Kategori</th>
+                                        <th class="px-6 py-4 text-xs font-bold text-neutral-500 uppercase tracking-wider">Kegiatan</th>
+                                        <th class="px-6 py-4 text-xs font-bold text-neutral-500 uppercase tracking-wider">Tanggal</th>
+                                        <th class="px-6 py-4 text-xs font-bold text-neutral-500 uppercase tracking-wider">Status</th>
+                                        <th class="px-6 py-4 text-xs font-bold text-neutral-500 uppercase tracking-wider">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-neutral-100" id="table-administrasi"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW: PERENCANAAN -->
+                <section id="view-perencanaan" class="view-section">
+                    <div class="mb-10">
+                        <h2 class="text-3xl font-black text-neutral-900 tracking-tight">Perencanaan</h2>
+                        <p class="text-neutral-500 mt-2 text-sm max-w-2xl">Dokumen fundamental arah kebijakan dan jadwal pelaksanaan.</p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="grid-perencanaan"></div>
+                </section>
+
+                <!-- VIEW: REALISASI -->
+                <section id="view-realisasi" class="view-section">
+                    <div class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
+                        <div>
+                            <h2 class="text-3xl font-black text-neutral-900 tracking-tight">Realisasi Mingguan</h2>
+                            <p class="text-neutral-500 mt-2 text-sm max-w-2xl">Laporan progres pencacahan berkala dari lapangan.</p>
+                        </div>
+                        <div class="w-full md:max-w-xs">
+                            <input type="text" id="search-realisasi" placeholder="Cari wilayah/pengirim..." class="w-full px-4 py-2 bg-white border border-neutral-200 rounded-lg focus:outline-none focus:border-brand-600 focus:ring-1 focus:ring-brand-600 text-sm transition-shadow">
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
+                        <ul class="divide-y divide-neutral-100" id="list-realisasi"></ul>
+                    </div>
+                </section>
+
+                <!-- VIEW: INVENTARISIR -->
+                <section id="view-inventarisir" class="view-section">
+                    <div class="mb-10 flex flex-col md:flex-row md:justify-between md:items-end gap-4">
+                        <div>
+                            <h2 class="text-3xl font-black text-neutral-900 tracking-tight">Inventaris & Tautan</h2>
+                            <p class="text-neutral-500 mt-2 text-sm max-w-2xl">Repositori terpusat untuk buku pedoman, slide, dan aset.</p>
+                        </div>
+                        <button onclick="openModal('modal-inventarisir')" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold uppercase tracking-wider px-5 py-3 rounded-lg transition-colors whitespace-nowrap">+ Tambah Data</button>
+                    </div>
+                    <div class="flex flex-wrap gap-2 mb-8" id="filter-inventarisir"></div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="grid-inventarisir"></div>
+                </section>
+
+                <!-- VIEW: AKUN -->
+                <section id="view-akun" class="view-section">
+                    <div class="mb-10 flex flex-col md:flex-row md:justify-between md:items-end gap-4">
+                        <div>
+                            <h2 class="text-3xl font-black text-neutral-900 tracking-tight">Manajemen Akun</h2>
+                            <p class="text-neutral-500 mt-2 text-sm max-w-2xl">Kelola profil dan hak akses pengguna sistem.</p>
+                        </div>
+                        <button onclick="openModal('modal-akun')" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold uppercase tracking-wider px-5 py-3 rounded-lg transition-colors whitespace-nowrap">+ Tambah Akun</button>
+                    </div>
+
+                    <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
+                        <div class="overflow-x-auto custom-scrollbar">
+                            <table class="w-full text-left border-collapse">
+                                <thead class="bg-neutral-50 border-b border-neutral-200">
+                                    <tr>
+                                        <th class="px-6 py-4 text-xs font-bold text-neutral-500 uppercase tracking-wider">Pengguna</th>
+                                        <th class="px-6 py-4 text-xs font-bold text-neutral-500 uppercase tracking-wider">Peran & Bidang</th>
+                                        <th class="px-6 py-4 text-xs font-bold text-neutral-500 uppercase tracking-wider">Status</th>
+                                        <th class="px-6 py-4 text-xs font-bold text-neutral-500 uppercase tracking-wider">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-neutral-100" id="table-akun"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+    </div> <!-- Close app-container -->
+
+    <!-- ================= MODALS SECTION ================= -->
+
+    <!-- MODAL AKUN -->
+    <div id="modal-akun" class="fixed inset-0 z-[100] bg-neutral-900/40 hidden items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-lg border border-neutral-200 max-w-sm w-full overflow-hidden">
+            <div class="px-6 py-5 border-b border-neutral-100 flex justify-between items-center">
+                <h3 id="title-modal-akun" class="text-sm font-bold text-neutral-900 uppercase tracking-wider">Tambah Akun</h3>
+                <button type="button" onclick="closeModal('modal-akun')" class="text-neutral-400 hover:text-neutral-900 font-bold text-sm uppercase">Batal</button>
+            </div>
+            <form id="form-akun" class="p-6 space-y-4" onsubmit="saveData(event, 'akun')">
+                <input type="hidden" id="akun-id">
+                <div>
+                    <label class="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Nama Lengkap</label>
+                    <input type="text" id="akun-nama" class="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-brand-600 text-neutral-900 text-sm font-medium" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Email</label>
+                    <input type="email" id="akun-email" class="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-brand-600 text-neutral-900 text-sm" required>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Role</label>
+                        <select id="akun-role" class="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-brand-600 text-neutral-900 text-sm">
+                            <option value="Super Admin">Super Admin</option>
+                            <option value="Admin">Admin</option>
+                            <option value="Viewer">Viewer</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Status</label>
+                        <select id="akun-status" class="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-brand-600 text-neutral-900 text-sm">
+                            <option value="Aktif">Aktif</option>
+                            <option value="Nonaktif">Nonaktif</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Bidang</label>
+                    <select id="akun-bidang" class="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-brand-600 text-neutral-900 text-sm" required>
+                        <option value="Kepala BPS">Kepala BPS</option>
+                        <option value="Ketua Tim SE2026">Ketua Tim SE2026</option>
+                        <option value="DTSEN">DTSEN</option>
+                        <option value="Manajemen Lapangan">Manajemen Lapangan</option>
+                        <option value="Administrasi">Administrasi</option>
+                        <option value="Pengolahan & TIK">Pengolahan & TIK</option>
+                        <option value="Penjaminan Kualitas">Penjaminan Kualitas</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Password</label>
+                    <input type="password" id="akun-password" class="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-brand-600 text-neutral-900 text-sm" placeholder="Kosongkan jika tidak ubah sandi">
+                </div>
+                <div class="pt-2">
+                    <button type="submit" class="w-full bg-brand-600 hover:bg-brand-500 text-white rounded-lg py-3 font-bold transition-colors">Simpan & Sync</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL INFORMASI -->
+    <div id="modal-informasi" class="fixed inset-0 z-[100] bg-neutral-900/40 hidden items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-lg border border-neutral-200 max-w-sm w-full overflow-hidden">
+            <div class="px-6 py-5 border-b border-neutral-100 flex justify-between items-center">
+                <h3 id="title-modal-informasi" class="text-sm font-bold text-neutral-900 uppercase tracking-wider">Entri Pengumuman</h3>
+                <button type="button" onclick="closeModal('modal-informasi')" class="text-neutral-400 hover:text-neutral-900 font-bold text-sm uppercase">Batal</button>
+            </div>
+            <form id="form-informasi" class="p-6 space-y-4" onsubmit="saveData(event, 'informasi')">
+                <input type="hidden" id="informasi-id">
+                <div>
+                    <label class="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Headline</label>
+                    <input type="text" id="informasi-headline" class="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-brand-600 text-neutral-900 text-sm font-medium" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Detail Isi</label>
+                    <textarea id="informasi-detail" rows="3" class="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-brand-600 text-neutral-900 text-sm resize-none" required></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Tanggal</label>
+                        <input type="text" id="informasi-tgl" placeholder="Mis: 10 Mei 2026" class="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-brand-600 text-neutral-900 text-sm" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Penulis</label>
+                        <input type="text" id="informasi-penulis" class="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-brand-600 text-neutral-900 text-sm" required>
+                    </div>
+                </div>
+                <div class="pt-2">
+                    <button type="submit" class="w-full bg-brand-600 hover:bg-brand-500 text-white rounded-lg py-3 font-bold transition-colors">Simpan & Sync</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL ADMINISTRASI -->
+    <div id="modal-administrasi" class="fixed inset-0 z-[100] bg-neutral-900/40 hidden items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-lg border border-neutral-200 max-w-sm w-full overflow-hidden">
+            <div class="px-6 py-5 border-b border-neutral-100 flex justify-between items-center">
+                <h3 id="title-modal-administrasi" class="text-sm font-bold text-neutral-900 uppercase tracking-wider">Entri Administrasi</h3>
+                <button type="button" onclick="closeModal('modal-administrasi')" class="text-neutral-400 hover:text-neutral-900 font-bold text-sm uppercase">Batal</button>
+            </div>
+            <form id="form-administrasi" class="p-6 space-y-4" onsubmit="saveData(event, 'administrasi')">
+                <input type="hidden" id="administrasi-id">
+                <div>
+                    <label class="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Judul Kegiatan</label>
+                    <input type="text" id="administrasi-judul" class="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-brand-600 text-neutral-900 text-sm font-medium" required>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Kategori</label>
+                        <select id="administrasi-kategori" class="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-brand-600 text-neutral-900 text-sm">
+                            <option value="Rekrutmen Mitra">Rekrutmen Mitra</option>
+                            <option value="Pelatihan Petugas">Pelatihan Petugas</option>
+                            <option value="Ngibar">Ngibar</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Status</label>
+                        <select id="administrasi-status" class="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-brand-600 text-neutral-900 text-sm">
+                            <option value="Proses">Proses</option>
+                            <option value="Selesai">Selesai</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Tanggal</label>
+                        <input type="text" id="administrasi-tgl" placeholder="Mis: 10 Mei 2026" class="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-brand-600 text-neutral-900 text-sm" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Keterangan</label>
+                        <input type="text" id="administrasi-keterangan" class="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-brand-600 text-neutral-900 text-sm">
+                    </div>
+                </div>
+                <div class="pt-2">
+                    <button type="submit" class="w-full bg-brand-600 hover:bg-brand-500 text-white rounded-lg py-3 font-bold transition-colors">Simpan & Sync</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL INVENTARISIR -->
+    <div id="modal-inventarisir" class="fixed inset-0 z-[100] bg-neutral-900/40 hidden items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-lg border border-neutral-200 max-w-sm w-full overflow-hidden">
+            <div class="px-6 py-5 border-b border-neutral-100 flex justify-between items-center">
+                <h3 id="title-modal-inventarisir" class="text-sm font-bold text-neutral-900 uppercase tracking-wider">Entri Inventaris</h3>
+                <button type="button" onclick="closeModal('modal-inventarisir')" class="text-neutral-400 hover:text-neutral-900 font-bold text-sm uppercase">Batal</button>
+            </div>
+            <form id="form-inventarisir" class="p-6 space-y-4" onsubmit="saveData(event, 'inventarisir')">
+                <input type="hidden" id="inventarisir-id">
+                <div>
+                    <label class="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Judul Tautan/Bahan</label>
+                    <input type="text" id="inventarisir-judul" class="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-brand-600 text-neutral-900 text-sm font-medium" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Kategori</label>
+                    <input type="text" id="inventarisir-kategori" placeholder="Mis: Materi, Media, Sosialisasi" class="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-brand-600 text-neutral-900 text-sm" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Deskripsi Singkat</label>
+                    <textarea id="inventarisir-deskripsi" rows="3" class="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-brand-600 text-neutral-900 text-sm resize-none"></textarea>
+                </div>
+                <div class="pt-2">
+                    <button type="submit" class="w-full bg-brand-600 hover:bg-brand-500 text-white rounded-lg py-3 font-bold transition-colors">Simpan & Sync</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-neutral-900 text-white px-6 py-4 rounded-lg shadow-xl transform translate-y-24 opacity-0 transition-all duration-300 z-[110] font-bold text-sm">
+        <span id="toast-msg">Perubahan disimpan ke Spreadsheet.</span>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- 0. KONFIGURASI GOOGLE APPS SCRIPT URL ---
+        const GOOGLE_APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyCK86ikNVJXgjJ9DMGNDruuusUc8ackPcMEKAIESIZGAT9HV9IDNims6VRNuhkS5TBkg/exec';
+
+        // --- 1. DATA STORAGE (Simulasi Database & Cache Lokal) ---
+        let db = {
+            akun: [
+                { id: "AKN-001", nama: "Budi Santoso", email: "budi@bps.go.id", role: "Super Admin", bidang: "Kepala BPS", status: "Aktif", password: "admin" },
+                { id: "AKN-002", nama: "Siti Aminah", email: "siti@bps.go.id", role: "Admin", bidang: "Manajemen Lapangan", status: "Aktif", password: "123" },
+                { id: "AKN-003", nama: "Jono Riyadi", email: "jono@bps.go.id", role: "Viewer", bidang: "Pengolahan & TIK", status: "Nonaktif", password: "123" }
+            ],
+            informasi: [
+                { id: "INF-001", tgl: "10 Mei 2026", headline: "Pembaruan Jadwal Pelatihan Petugas", detail: "Pelatihan petugas kecamatan A diundur menjadi tanggal 15 Mei 2026 karena kendala teknis di lokasi. Harap maklum.", penulis: "Budi S." },
+                { id: "INF-002", tgl: "08 Mei 2026", headline: "Rilis Materi Sosialisasi UMKM", detail: "Materi terbaru untuk sosialisasi tingkat desa sudah tersedia di menu Inventarisir Link. Silakan diunduh.", penulis: "Tim IT" }
+            ],
+            administrasi: [
+                { id: "ADM-001", kategori: "Rekrutmen Mitra", judul: "Daftar Calon Mitra Kecamatan B", tgl: "20 Apr 2026", status: "Selesai", keterangan: "Tahap 1 selesai" },
+                { id: "ADM-002", kategori: "Pelatihan Petugas", judul: "Daftar Hadir Pelatihan Gelombang 1", tgl: "05 Mei 2026", status: "Proses", keterangan: "Menunggu ttd" },
+                { id: "ADM-003", kategori: "Ngibar", judul: "Laporan Ngibar Wilayah Barat", tgl: "28 Apr 2026", status: "Selesai", keterangan: "File terlampir" }
+            ],
+            perencanaan: [
+                { id: "RNC-001", judul: "Rencana Strategis Kegiatan SE2026", tgl: "10 Jan 2026", pembuat: "Tim Perencanaan" },
+                { id: "RNC-002", judul: "Timeline Induk Pelaksanaan SE2026", tgl: "15 Jan 2026", pembuat: "BPS Pusat" }
+            ],
+            realisasi: [
+                { id: "RLS-001", minggu: "Minggu 1", bulan: "Mei", judul: "Laporan Progres Kec. A", tgl: "07 Mei 2026", status: "Disetujui", pengirim: "Siti Aminah" },
+                { id: "RLS-002", minggu: "Minggu 2", bulan: "Mei", judul: "Laporan Progres Kec. A", tgl: "14 Mei 2026", status: "Draf", pengirim: "Siti Aminah" },
+                { id: "RLS-003", minggu: "Minggu 1", bulan: "Mei", judul: "Laporan Progres Kec. B", tgl: "08 Mei 2026", status: "Revisi", pengirim: "Jono Riyadi" }
+            ],
+            inventarisir: [
+                { id: "INV-001", kategori: "Materi", judul: "Buku Pedoman Pencacahan", deskripsi: "PDF Buku Pedoman Hal 1-100" },
+                { id: "INV-002", kategori: "Bahan Ajar", judul: "Slide TOT Instruktur", deskripsi: "Format PPTX untuk TOT" },
+                { id: "INV-003", kategori: "Media", judul: "Desain Spanduk SE2026", deskripsi: "Aset gambar resolusi tinggi" },
+                { id: "INV-004", kategori: "Sosialisasi", judul: "Video Profil untuk Medsos", deskripsi: "Link Youtube untuk disebar" }
+            ]
+        };
+
+        // --- 2. GLOBAL VARIABLES ---
+        let chartRealisasiInst = null;
+        let chartInventarisInst = null;
+        let currentUser = null;
+
+        // Pemetaan ID Tabel agar sesuai dengan sheet di Google Sheets
+        const sheetNameMapping = {
+            'akun': 'Daftar_Akun',
+            'informasi': 'Informasi',
+            'administrasi': 'Administrasi',
+            'inventarisir': 'Inventarisir'
+        };
+
+        // --- 3. STATE MANAGEMENT & NAVIGATION ---
+        const navLinks = [
+            { id: 'dashboard', label: 'Ikhtisar' },
+            { id: 'informasi', label: 'Pengumuman' },
+            { id: 'administrasi', label: 'Administrasi' },
+            { id: 'perencanaan', label: 'Perencanaan' },
+            { id: 'realisasi', label: 'Realisasi Mingguan' },
+            { id: 'inventarisir', label: 'Inventaris & Tautan' },
+            { id: 'akun', label: 'Manajemen Akun' }
+        ];
+
+        let currentActiveView = 'dashboard';
+
+        function initNavigation() {
+            const navContainer = document.getElementById('nav-menu');
+            navContainer.innerHTML = '';
+            
+            navLinks.forEach(link => {
+                const btn = document.createElement('button');
+                const isActive = link.id === currentActiveView;
+                btn.className = `w-full text-left px-5 py-3.5 rounded-lg transition-colors text-sm ${isActive ? 'bg-brand-600 text-white font-bold' : 'text-neutral-400 font-medium hover:bg-neutral-800 hover:text-white'}`;
+                btn.innerHTML = link.label;
+                btn.onclick = () => switchView(link.id, btn);
+                navContainer.appendChild(btn);
+            });
+        }
+
+        function switchView(viewId, btnElement) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(`view-${viewId}`).classList.add('active');
+            
+            const navButtons = document.querySelectorAll('#nav-menu button');
+            navButtons.forEach(btn => {
+                btn.className = 'w-full text-left px-5 py-3.5 rounded-lg transition-colors text-sm text-neutral-400 font-medium hover:bg-neutral-800 hover:text-white';
+            });
+            
+            if(btnElement) btnElement.className = 'w-full text-left px-5 py-3.5 rounded-lg transition-colors text-sm bg-brand-600 text-white font-bold';
+            else navButtons[0].className = 'w-full text-left px-5 py-3.5 rounded-lg transition-colors text-sm bg-brand-600 text-white font-bold';
+
+            document.getElementById('sidebar').classList.add('-translate-x-full');
+            currentActiveView = viewId;
+        }
+
+        document.getElementById('open-sidebar').onclick = () => document.getElementById('sidebar').classList.remove('-translate-x-full');
+        document.getElementById('close-sidebar').onclick = () => document.getElementById('sidebar').classList.add('-translate-x-full');
+
+        // --- 4. RENDER FUNCTIONS ---
+        function getBadgeStyle(text) {
+            const t = text.toLowerCase();
+            if(['aktif', 'selesai', 'disetujui'].includes(t)) return 'bg-neutral-900 text-white';
+            if(['proses', 'revisi'].includes(t)) return 'border border-brand-600 text-brand-600';
+            if(['nonaktif', 'draf'].includes(t)) return 'bg-neutral-200 text-neutral-600';
+            return 'bg-brand-500 text-neutral-900';
+        }
+
+        function renderDashboard() {
+            const container = document.getElementById('dashboard-stats');
+            const data = [
+                { label: 'Total Pengumuman', val: db.informasi.length },
+                { label: 'Administrasi', val: db.administrasi.length },
+                { label: 'Laporan Masuk', val: db.realisasi.length },
+                { label: 'Total Pengguna', val: db.akun.length }
+            ];
+            container.innerHTML = data.map(d => `
+                <div class="bg-white p-6 rounded-xl border border-neutral-200 flex flex-col justify-between">
+                    <p class="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-4">${d.label}</p>
+                    <p class="text-4xl font-black text-neutral-900">${d.val}</p>
+                </div>
+            `).join('');
+        }
+
+        function renderInformasi() {
+            const container = document.getElementById('list-informasi');
+            if(db.informasi.length === 0) return container.innerHTML = `<p class="p-8 text-center text-neutral-500 text-sm border border-neutral-200 rounded-xl bg-white">Belum ada data pengumuman.</p>`;
+            
+            container.innerHTML = db.informasi.map(info => `
+                <div class="bg-white p-6 rounded-xl border border-neutral-200 hover:border-brand-500 transition-colors">
+                    <div class="flex justify-between items-start mb-3">
+                        <h3 class="text-lg font-bold text-neutral-900">${info.headline}</h3>
+                        <div class="flex flex-col items-end shrink-0 ml-4 gap-2">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-neutral-400">${info.tgl}</span>
+                            <div>
+                                <button onclick="editData('${info.id}', 'informasi')" class="text-[10px] font-bold text-brand-600 hover:text-brand-900 uppercase tracking-wider mr-3">Edit</button>
+                                <button onclick="deleteData('${info.id}', 'informasi')" class="text-[10px] font-bold text-neutral-400 hover:text-neutral-900 uppercase tracking-wider">Hapus</button>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-neutral-600 text-sm mb-4 leading-relaxed">${info.detail}</p>
+                    <p class="text-xs font-bold text-neutral-900">Oleh: <span class="font-medium text-neutral-500">${info.penulis}</span></p>
+                </div>
+            `).join('');
+        }
+
+        function renderAdministrasi() {
+            const container = document.getElementById('table-administrasi');
+            if(db.administrasi.length === 0) return container.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-neutral-500 text-sm">Belum ada data.</td></tr>`;
+
+            container.innerHTML = db.administrasi.map(adm => `
+                <tr class="hover:bg-neutral-50 border-b border-neutral-100 last:border-0 transition-colors">
+                    <td class="px-6 py-4 whitespace-nowrap"><span class="text-xs font-bold text-neutral-500 uppercase tracking-wider">${adm.kategori}</span></td>
+                    <td class="px-6 py-4">
+                        <p class="font-bold text-neutral-900 text-sm">${adm.judul}</p>
+                        <p class="text-xs text-neutral-500 mt-1 truncate max-w-[200px]">${adm.keterangan}</p>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-neutral-600">${adm.tgl}</td>
+                    <td class="px-6 py-4 whitespace-nowrap"><span class="px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${getBadgeStyle(adm.status)}">${adm.status}</span></td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <button onclick="editData('${adm.id}', 'administrasi')" class="text-xs font-bold text-brand-600 hover:text-brand-900 uppercase tracking-wider mr-3">Edit</button>
+                        <button onclick="deleteData('${adm.id}', 'administrasi')" class="text-xs font-bold text-neutral-400 hover:text-neutral-900 uppercase tracking-wider">Hapus</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function renderPerencanaan() {
+            const container = document.getElementById('grid-perencanaan');
+            container.innerHTML = db.perencanaan.map(doc => `
+                <div class="bg-white p-6 rounded-xl border border-neutral-200 hover:border-neutral-900 cursor-pointer transition-colors group flex flex-col justify-between h-full">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-neutral-400 block mb-3">${doc.tgl}</span>
+                        <h3 class="text-base font-bold text-neutral-900 mb-4 group-hover:text-brand-600 transition-colors leading-snug">${doc.judul}</h3>
+                    </div>
+                    <div class="text-xs font-medium text-neutral-500 border-t border-neutral-100 pt-4 mt-2">
+                        Pembuat: <span class="font-bold text-neutral-900">${doc.pembuat}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderRealisasi(filterText = '') {
+            const container = document.getElementById('list-realisasi');
+            const filteredData = db.realisasi.filter(item => 
+                item.judul.toLowerCase().includes(filterText.toLowerCase()) || 
+                item.pengirim.toLowerCase().includes(filterText.toLowerCase())
+            );
+
+            if(filteredData.length === 0) return container.innerHTML = `<li class="p-8 text-center text-neutral-500 text-sm">Tidak ada data ditemukan.</li>`;
+
+            container.innerHTML = filteredData.map(rel => `
+                <li class="p-6 hover:bg-neutral-50 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-neutral-100 last:border-0">
+                    <div class="flex items-center gap-5">
+                        <div class="text-center w-14 shrink-0">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block">${rel.bulan}</span>
+                            <span class="text-sm font-black text-neutral-900 block">${rel.minggu}</span>
+                        </div>
+                        <div class="h-10 w-px bg-neutral-200 hidden sm:block"></div>
+                        <div>
+                            <h4 class="font-bold text-neutral-900 text-sm mb-1">${rel.judul}</h4>
+                            <p class="text-xs text-neutral-500 font-medium">${rel.tgl} &middot; <span class="text-neutral-900">${rel.pengirim}</span></p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-6 self-start sm:self-auto">
+                        <span class="px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${getBadgeStyle(rel.status)}">${rel.status}</span>
+                        <a href="#" class="text-xs font-bold text-neutral-400 hover:text-neutral-900 uppercase tracking-wider">Review</a>
+                    </div>
+                </li>
+            `).join('');
+        }
+
+        function renderInventarisir() {
+            const categories = ['Semua', ...new Set(db.inventarisir.map(i => i.kategori))];
+            const filterContainer = document.getElementById('filter-inventarisir');
+            const gridContainer = document.getElementById('grid-inventarisir');
+
+            const renderGrid = (selectedCat) => {
+                const data = selectedCat === 'Semua' ? db.inventarisir : db.inventarisir.filter(i => i.kategori === selectedCat);
+                if(data.length === 0) return gridContainer.innerHTML = `<p class="col-span-full p-8 text-center text-neutral-500 text-sm border border-neutral-200 rounded-xl bg-white">Belum ada data inventaris.</p>`;
+
+                gridContainer.innerHTML = data.map(inv => `
+                    <div class="bg-white p-6 rounded-xl border border-neutral-200 flex flex-col justify-between hover:border-neutral-900 transition-colors">
+                        <div>
+                            <span class="text-[10px] font-bold uppercase tracking-widest text-brand-600 mb-3 block">${inv.kategori}</span>
+                            <h4 class="font-bold text-neutral-900 text-sm mb-2">${inv.judul}</h4>
+                            <p class="text-xs text-neutral-500 font-medium mb-6">${inv.deskripsi}</p>
+                        </div>
+                        <div class="flex justify-between items-center border-t border-neutral-100 pt-4 mt-auto">
+                            <a href="#" class="text-xs font-bold text-neutral-900 hover:text-brand-600 uppercase tracking-wider">Buka Tautan</a>
+                            <div>
+                                <button onclick="editData('${inv.id}', 'inventarisir')" class="text-[10px] font-bold text-brand-600 hover:text-brand-900 uppercase tracking-wider mr-3">Edit</button>
+                                <button onclick="deleteData('${inv.id}', 'inventarisir')" class="text-[10px] font-bold text-neutral-400 hover:text-neutral-900 uppercase tracking-wider">Hapus</button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            };
+
+            filterContainer.innerHTML = categories.map(cat => `
+                <button class="filter-btn px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-colors ${cat === 'Semua' ? 'bg-neutral-900 text-white' : 'bg-white border border-neutral-200 text-neutral-600 hover:bg-neutral-100'}" data-cat="${cat}">
+                    ${cat}
+                </button>
+            `).join('');
+
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.onclick = (e) => {
+                    document.querySelectorAll('.filter-btn').forEach(b => { b.classList.remove('bg-neutral-900', 'text-white'); b.classList.add('bg-white', 'text-neutral-600'); });
+                    e.target.classList.remove('bg-white', 'text-neutral-600');
+                    e.target.classList.add('bg-neutral-900', 'text-white');
+                    renderGrid(e.target.dataset.cat);
+                };
+            });
+
+            renderGrid('Semua');
+        }
+
+        function renderAkun() {
+            const container = document.getElementById('table-akun');
+            if(db.akun.length === 0) return container.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-neutral-500 text-sm">Belum ada akun.</td></tr>`;
+
+            container.innerHTML = db.akun.map(acc => `
+                <tr class="hover:bg-neutral-50 border-b border-neutral-100 last:border-0 transition-colors">
+                    <td class="px-6 py-4">
+                        <p class="font-bold text-neutral-900 text-sm">${acc.nama}</p>
+                        <p class="text-xs text-neutral-500 font-medium mt-0.5">${acc.email}</p>
+                    </td>
+                    <td class="px-6 py-4">
+                        <p class="text-sm font-bold text-neutral-900">${acc.role}</p>
+                        <p class="text-xs text-neutral-500 font-medium mt-0.5">${acc.bidang}</p>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${acc.status === 'Aktif' ? 'bg-neutral-900 text-white' : 'bg-neutral-200 text-neutral-500'}">
+                            ${acc.status}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        <button onclick="editData('${acc.id}', 'akun')" class="text-xs font-bold text-brand-600 hover:text-brand-900 uppercase tracking-wider mr-3">Edit</button>
+                        <button onclick="deleteData('${acc.id}', 'akun')" class="text-xs font-bold text-neutral-400 hover:text-neutral-900 uppercase tracking-wider">Hapus</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // --- 5. LOGIC: LOGIN ---
+        function handleLogin(e) {
+            e.preventDefault();
+            const userVal = document.getElementById('login-username').value;
+            const passVal = document.getElementById('login-password').value;
+
+            const user = db.akun.find(u => (u.email === userVal || u.nama === userVal) && u.password === passVal);
+
+            if (user) {
+                if (user.status !== 'Aktif') {
+                    document.getElementById('login-error').innerText = "Akun nonaktif. Hubungi administrator.";
+                    document.getElementById('login-error').classList.remove('hidden');
+                    return;
+                }
+                
+                currentUser = user;
+                document.getElementById('login-error').classList.add('hidden');
+
+                document.getElementById('sidebar-user-name').innerText = currentUser.nama;
+                document.getElementById('sidebar-user-role').innerText = `${currentUser.role} - ${currentUser.bidang}`;
+
+                document.getElementById('login-container').classList.add('hidden');
+                document.getElementById('app-container').classList.remove('hidden');
+                setTimeout(initCharts, 100);
+            } else {
+                document.getElementById('login-error').innerText = "Email atau password salah!";
+                document.getElementById('login-error').classList.remove('hidden');
+            }
+        }
+
+        // --- 6. LOGIC: CRUD KE GOOGLE APPS SCRIPT ---
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('modal-active');
+            document.getElementById('form-' + modalId.split('-')[1]).reset();
+            document.getElementById(modalId.split('-')[1] + '-id').value = '';
+            document.getElementById('title-' + modalId).innerText = 'Tambah ' + modalId.split('-')[1];
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('modal-active');
+        }
+
+        function editData(id, type) {
+            const dataRow = db[type].find(a => a.id === id);
+            if(dataRow) {
+                document.getElementById('title-modal-' + type).innerText = 'Edit ' + type;
+                document.getElementById(type + '-id').value = dataRow.id;
+                
+                if(type === 'akun') {
+                    document.getElementById('akun-nama').value = dataRow.nama;
+                    document.getElementById('akun-email').value = dataRow.email;
+                    document.getElementById('akun-role').value = dataRow.role;
+                    document.getElementById('akun-bidang').value = dataRow.bidang;
+                    document.getElementById('akun-status').value = dataRow.status;
+                    document.getElementById('akun-password').value = '';
+                } else if(type === 'informasi') {
+                    document.getElementById('informasi-headline').value = dataRow.headline;
+                    document.getElementById('informasi-detail').value = dataRow.detail;
+                    document.getElementById('informasi-tgl').value = dataRow.tgl;
+                    document.getElementById('informasi-penulis').value = dataRow.penulis;
+                } else if(type === 'administrasi') {
+                    document.getElementById('administrasi-judul').value = dataRow.judul;
+                    document.getElementById('administrasi-kategori').value = dataRow.kategori;
+                    document.getElementById('administrasi-tgl').value = dataRow.tgl;
+                    document.getElementById('administrasi-status').value = dataRow.status;
+                    document.getElementById('administrasi-keterangan').value = dataRow.keterangan;
+                } else if(type === 'inventarisir') {
+                    document.getElementById('inventarisir-judul').value = dataRow.judul;
+                    document.getElementById('inventarisir-kategori').value = dataRow.kategori;
+                    document.getElementById('inventarisir-deskripsi').value = dataRow.deskripsi;
+                }
+                
+                document.getElementById('modal-' + type).classList.add('modal-active');
+            }
+        }
+
+        // SAVE DATA (ADD/UPDATE) & FETCH API
+        async function saveData(e, type) {
+            e.preventDefault();
+            
+            // UI Button State Loading
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalText = btn.innerText;
+            btn.innerText = "Menyinkronkan...";
+            btn.disabled = true;
+
+            const id = document.getElementById(type + '-id').value;
+            let newData = {};
+
+            // 1. Kumpulkan Data dari Formulir
+            if(type === 'akun') {
+                newData = {
+                    id: id || 'AKN-' + Math.floor(Math.random() * 10000),
+                    nama: document.getElementById('akun-nama').value,
+                    email: document.getElementById('akun-email').value,
+                    role: document.getElementById('akun-role').value,
+                    bidang: document.getElementById('akun-bidang').value,
+                    status: document.getElementById('akun-status').value,
+                };
+                const pass = document.getElementById('akun-password').value;
+                if(pass) newData.password = pass; 
+                else if(id) newData.password = db.akun.find(a=>a.id===id).password; 
+            } 
+            else if(type === 'informasi') {
+                newData = {
+                    id: id || 'INF-' + Math.floor(Math.random() * 10000),
+                    headline: document.getElementById('informasi-headline').value,
+                    detail: document.getElementById('informasi-detail').value,
+                    tgl: document.getElementById('informasi-tgl').value,
+                    penulis: document.getElementById('informasi-penulis').value,
+                };
+            }
+            else if(type === 'administrasi') {
+                newData = {
+                    id: id || 'ADM-' + Math.floor(Math.random() * 10000),
+                    judul: document.getElementById('administrasi-judul').value,
+                    kategori: document.getElementById('administrasi-kategori').value,
+                    tgl: document.getElementById('administrasi-tgl').value,
+                    status: document.getElementById('administrasi-status').value,
+                    keterangan: document.getElementById('administrasi-keterangan').value,
+                };
+            }
+            else if(type === 'inventarisir') {
+                newData = {
+                    id: id || 'INV-' + Math.floor(Math.random() * 10000),
+                    judul: document.getElementById('inventarisir-judul').value,
+                    kategori: document.getElementById('inventarisir-kategori').value,
+                    deskripsi: document.getElementById('inventarisir-deskripsi').value,
+                };
+            }
+
+            // 2. Pembaruan Cache Lokal (Agar UI langsung berubah cepat)
+            if(id) {
+                const index = db[type].findIndex(a => a.id === id);
+                if(index !== -1) db[type][index] = newData; // Update
+            } else {
+                db[type].unshift(newData); // Insert
+            }
+
+            // 3. Kirim POST Request ke Google Apps Script
+            try {
+                const payload = {
+                    action: id ? 'edit' : 'tambah',
+                    sheetName: sheetNameMapping[type] || type,
+                    rowData: Object.values(newData)
+                };
+
+                fetch(GOOGLE_APP_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', 
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                closeModal('modal-' + type);
+                refreshAllViews();
+                showToast("Data tersinkronisasi ke Google Spreadsheet!");
+
+            } catch (err) {
+                console.error("Gagal sinkronisasi API: ", err);
+                showToast("Perubahan lokal disimpan, gagal koneksi ke DB.");
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        // DELETE DATA
+        function deleteData(id, type) {
+            if(window.confirm("Apakah Anda yakin ingin menghapus data ini dari sistem?")) {
+                db[type] = db[type].filter(item => item.id !== id);
+                refreshAllViews();
+
+                const payload = {
+                    action: 'hapus',
+                    sheetName: sheetNameMapping[type] || type,
+                    rowData: [id]
+                };
+
+                fetch(GOOGLE_APP_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', 
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                showToast("Data dihapus dan Spreadsheet diperbarui.");
+            }
+        }
+
+        function refreshAllViews() {
+            renderDashboard();
+            renderInformasi();
+            renderAdministrasi();
+            renderInventarisir();
+            renderAkun();
+            if(chartRealisasiInst || chartInventarisInst) initCharts(); 
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            setTimeout(() => toast.classList.add('translate-y-24', 'opacity-0'), 3000);
+        }
+
+        // --- 7. CHARTS INIT ---
+        function initCharts() {
+            Chart.defaults.color = '#6b7280';
+            Chart.defaults.font.family = 'Inter, sans-serif';
+            
+            if(chartRealisasiInst) chartRealisasiInst.destroy();
+            if(chartInventarisInst) chartInventarisInst.destroy();
+
+            const ctxRealisasi = document.getElementById('chartRealisasi').getContext('2d');
+            const statusCounts = {};
+            db.realisasi.forEach(r => statusCounts[r.status] = (statusCounts[r.status] || 0) + 1);
+            
+            chartRealisasiInst = new Chart(ctxRealisasi, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(statusCounts),
+                    datasets: [{
+                        label: 'Laporan',
+                        data: Object.values(statusCounts),
+                        backgroundColor: ['#231f20', '#f79039', '#e5e7eb'],
+                        borderRadius: 4,
+                        barPercentage: 0.6
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, border: {display: false}, grid: {color: '#f3f4f6'}, ticks: { stepSize: 1, precision: 0 } },
+                        x: { border: {display: false}, grid: { display: false } }
+                    }
+                }
+            });
+
+            const ctxInventaris = document.getElementById('chartInventaris').getContext('2d');
+            const invCounts = {};
+            db.inventarisir.forEach(i => invCounts[i.kategori] = (invCounts[i.kategori] || 0) + 1);
+
+            chartInventarisInst = new Chart(ctxInventaris, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(invCounts),
+                    datasets: [{
+                        data: Object.values(invCounts),
+                        backgroundColor: ['#231f20', '#f79039', '#febd26', '#e5e7eb'],
+                        borderWidth: 0,
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, cutout: '75%',
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, usePointStyle: true, font: { size: 11, weight: 'bold' } } } }
+                }
+            });
+        }
+
+        // --- 8. INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initNavigation();
+            switchView('dashboard');
+            refreshAllViews();
+            renderPerencanaan(); 
+            renderRealisasi();
+            
+            document.getElementById('search-realisasi').addEventListener('input', (e) => {
+                renderRealisasi(e.target.value);
+            });
+        });
+    </script>
+</body>
+</html>
